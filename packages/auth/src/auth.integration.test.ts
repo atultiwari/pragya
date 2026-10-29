@@ -5,7 +5,7 @@ import { createAuth, getSessionUserId, type Auth } from "./auth.js";
 import { parseAuthEnv } from "./config.js";
 import type { Mailer, SmsSender } from "./senders.js";
 
-const DATABASE_URL = process.env.DATABASE_URL;
+const DATABASE_URL = process.env.TEST_DATABASE_URL;
 
 const env = parseAuthEnv({
   BETTER_AUTH_SECRET: "test-secret-".padEnd(40, "x"),

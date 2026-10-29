@@ -36,6 +36,7 @@ describe("packManifestSchema", () => {
     ["future schema", { ...manifest, schemaVersion: 2 }],
     ["file outside pack", { ...manifest, questionFiles: ["../other.json"] }],
     ["absolute file", { ...manifest, questionFiles: ["/etc/passwd"] }],
+    ["NUL byte in path", { ...manifest, questionFiles: ["questions/a\u0000.json"] }],
     ["no modules", { ...manifest, modules: [] }],
     [
       "duplicate lesson id",

@@ -9,7 +9,7 @@ import { upsertStreams } from "./streams.js";
 import { findUserByEmail } from "./users.js";
 import { eq } from "drizzle-orm";
 
-const DATABASE_URL = process.env.DATABASE_URL;
+const DATABASE_URL = process.env.TEST_DATABASE_URL;
 
 describe.skipIf(!DATABASE_URL)("repositories against MySQL", () => {
   let handle: DbHandle;

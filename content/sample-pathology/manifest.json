@@ -1,0 +1,36 @@
+{
+  "schemaVersion": 1,
+  "id": "sample-pathology-cell-injury",
+  "version": "0.1.0",
+  "title": "General Pathology: Cell Injury (sample)",
+  "streamSlug": "mbbs",
+  "summary": "A short development sample covering the causes of cell injury, reversible change, and the patterns of cell death. Pending subject-expert review.",
+  "language": "en",
+  "pricePaise": 0,
+  "visibility": "public",
+  "modules": [
+    {
+      "id": "cell-injury",
+      "title": "Cell injury and cell death",
+      "lessons": [
+        {
+          "id": "cell-injury-overview",
+          "title": "Overview of cell injury",
+          "file": "lessons/01-overview.md",
+          "isPreview": true
+        },
+        {
+          "id": "reversible-injury",
+          "title": "Reversible injury",
+          "file": "lessons/02-reversible-injury.md"
+        },
+        {
+          "id": "necrosis-and-apoptosis",
+          "title": "Necrosis and apoptosis",
+          "file": "lessons/03-necrosis-and-apoptosis.md"
+        }
+      ]
+    }
+  ],
+  "questionFiles": ["questions/cell-injury.json"]
+}

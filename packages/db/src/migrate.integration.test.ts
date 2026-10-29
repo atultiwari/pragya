@@ -2,7 +2,7 @@ import { afterAll, beforeAll, describe, expect, it } from "vitest";
 import { createDb, type DbHandle } from "./client.js";
 import { runMigrations, withAdvisoryLock } from "./migrate.js";
 
-const DATABASE_URL = process.env.DATABASE_URL;
+const DATABASE_URL = process.env.TEST_DATABASE_URL;
 const pause = (ms: number) => new Promise((resolve) => setTimeout(resolve, ms));
 
 describe.skipIf(!DATABASE_URL)("migrations under concurrency", () => {

@@ -15,6 +15,7 @@ export const packPathSchema = z
   .refine(
     (path) =>
       !path.startsWith("/") &&
+      !path.includes("\0") &&
       !path.includes("\\") &&
       !/^[a-z][a-z0-9+.-]*:/i.test(path) &&
       path.split("/").every((segment) => segment !== ".." && segment !== "." && segment !== ""),

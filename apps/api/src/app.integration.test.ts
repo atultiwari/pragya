@@ -6,7 +6,7 @@ import { afterAll, beforeAll, describe, expect, it } from "vitest";
 import { createApp } from "./app.js";
 import { parseEnv } from "./env.js";
 
-const DATABASE_URL = process.env.DATABASE_URL;
+const DATABASE_URL = process.env.TEST_DATABASE_URL;
 
 const source = {
   DATABASE_URL,

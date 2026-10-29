@@ -3,15 +3,53 @@ import { blockSchema, CALLOUT_VARIANTS, type Block } from "./blocks.js";
 
 export type ParseResult =
   | { readonly ok: true; readonly blocks: readonly Block[] }
-  | { readonly ok: false; readonly errors: readonly string[] };
+  | {
+      readonly ok: false;
+      readonly errors: readonly string[];
+      /** The blocks that did parse, so callers can still check e.g. figure paths. */
+      readonly blocks: readonly Block[];
+    };
 
 /** Fenced blocks that embed structured widgets; their body is JSON for the matching block type. */
 const EMBED_LANGS = new Set(["video", "sim", "quiz"]);
 const ALERT = /^\[!([A-Za-z]+)\][ \t]*(.*)$/;
+/** Only web and mail links are allowed in text; `javascript:`, `data:` etc. are rejected. */
+const SAFE_LINK = /^(https?:|mailto:)/i;
 
 type Step = { readonly block?: unknown; readonly error?: string };
 
 const preview = (raw: string): string => JSON.stringify(raw.trim().slice(0, 40));
+
+/** The inline tokens directly inside a block token (cells and list items included). */
+function inlineChildren(token: Token): readonly Token[] {
+  if (token.type === "table") {
+    const table = token as Tokens.Table;
+    return [...table.header, ...table.rows.flat()].flatMap((cell) => cell.tokens);
+  }
+  if (token.type === "list") return (token as Tokens.List).items.flatMap((item) => item.tokens);
+  return "tokens" in token && Array.isArray(token.tokens) ? token.tokens : [];
+}
+
+/**
+ * Inline content is stored as Markdown text, so anything a renderer could turn into active
+ * content is rejected at build time rather than trusted to escaping later.
+ */
+function inlineProblems(tokens: readonly Token[]): string[] {
+  return tokens.flatMap((token) => {
+    if (token.type === "html") return [`inline HTML is not allowed (${preview(token.raw)})`];
+    if (token.type === "image")
+      return [`inline image ${preview(token.raw)}; put figures on their own line`];
+    if (token.type === "link" && !SAFE_LINK.test((token as Tokens.Link).href.trim())) {
+      return [`link to "${(token as Tokens.Link).href}" is not allowed; use http(s) or mailto`];
+    }
+    return inlineProblems(inlineChildren(token));
+  });
+}
+
+const isFigureParagraph = (token: Token): boolean =>
+  token.type === "paragraph" &&
+  (token as Tokens.Paragraph).tokens.length === 1 &&
+  (token as Tokens.Paragraph).tokens[0]?.type === "image";
 
 function fromBlockquote(token: Tokens.Blockquote): Step {
   const [firstLine = "", ...rest] = token.text.split("\n");
@@ -109,6 +147,11 @@ export function parseLessonMarkdown(markdown: string): ParseResult {
   const blocks: Block[] = [];
   const errors: string[] = [];
   marked.lexer(markdown).forEach((token, index) => {
+    const unsafe = isFigureParagraph(token) ? [] : inlineProblems(inlineChildren(token));
+    if (unsafe.length > 0) {
+      errors.push(...unsafe.map((problem) => `block ${index + 1}: ${problem}`));
+      return;
+    }
     const step = toStep(token);
     if (step === null) return;
     if (step.error !== undefined) {
@@ -122,5 +165,5 @@ export function parseLessonMarkdown(markdown: string): ParseResult {
         `block ${index + 1}: ${parsed.error.issues.map((i) => `${i.path.join(".") || "block"} ${i.message}`).join("; ")}`,
       );
   });
-  return errors.length > 0 ? { ok: false, errors } : { ok: true, blocks };
+  return errors.length > 0 ? { ok: false, errors, blocks } : { ok: true, blocks };
 }

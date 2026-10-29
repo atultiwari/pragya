@@ -103,6 +103,30 @@ describe("parseLessonMarkdown", () => {
     expect(result.errors[3]).toMatch(/unsupported fenced block "python"/);
   });
 
+  it.each([
+    ["inline HTML in a paragraph", "Text <img src=x onerror=alert(1)> here", /inline HTML/],
+    ["inline HTML in a list item", "- safe\n- <b>bold</b>", /inline HTML/],
+    ["inline HTML in a table cell", "| A |\n| --- |\n| <span>x</span> |", /inline HTML/],
+    ["a javascript: link", "[click](javascript:alert(1))", /link .*javascript/],
+    ["a data: link in a callout", "> [!NOTE]\n> [x](data:text/html,hi)", /link .*data:/],
+    ["an inline image", "See ![x](figures/x.svg) inline", /inline image/],
+  ])("rejects %s", (_label, md, message) => {
+    const result = parseLessonMarkdown(md);
+    expect(result.ok).toBe(false);
+    if (!result.ok) expect(result.errors.join()).toMatch(message);
+  });
+
+  it("allows http, https and mailto links", () => {
+    const md = "[a](https://example.org) [b](http://example.org) [c](mailto:help@example.org)";
+    expect(parseLessonMarkdown(md).ok).toBe(true);
+  });
+
+  it("still returns the blocks that parsed when others fail", () => {
+    const result = parseLessonMarkdown("# Title\n\n![Cell](figures/cell.svg)");
+    expect(result.ok).toBe(false);
+    expect(result.blocks).toEqual([{ type: "figure", src: "figures/cell.svg", alt: "Cell" }]);
+  });
+
   it("reports schema violations inside embeds", () => {
     const result = parseLessonMarkdown('```video\n{ "provider": "vimeo", "videoId": "x" }\n```');
     expect(result.ok).toBe(false);
