@@ -1,6 +1,8 @@
 import { permittedActions, type Subject } from "@pragya/authz";
 import { z } from "zod";
 import { platformProcedure, publicProcedure, router } from "../trpc.js";
+import { catalogueRouter } from "./catalogue.js";
+import { enrollmentRouter } from "./enrollment.js";
 
 /** Only scope identifiers are accepted from clients; facts such as enrolment are resolved server-side. */
 const scopeInput = z
@@ -33,6 +35,8 @@ export const appRouter = router({
       return { actions: permittedActions(ctx.subject, scope) };
     }),
   }),
+  catalogue: catalogueRouter,
+  enrollment: enrollmentRouter,
   admin: router({
     ping: platformProcedure("platform.manage").query(() => ({ pong: true })),
   }),

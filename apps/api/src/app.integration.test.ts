@@ -1,4 +1,10 @@
-import { createDb, createRoleAssignmentRepository, runMigrations } from "@pragya/db";
+import {
+  createDb,
+  createRoleAssignmentRepository,
+  importCourse,
+  runMigrations,
+  schema,
+} from "@pragya/db";
 import type { FastifyInstance } from "fastify";
 import { pino } from "pino";
 import { ulid } from "ulid";
@@ -24,10 +30,44 @@ const cookiesOf = (setCookie: string | string[] | undefined): string =>
 
 describe.skipIf(!DATABASE_URL)("API with Better Auth and MySQL", () => {
   let server: FastifyInstance;
+  const streamSlug = `api-${ulid().toLowerCase()}`;
+  const courseSlug = `api-course-${ulid().toLowerCase()}`;
 
   beforeAll(async () => {
     const migrator = createDb(DATABASE_URL ?? "");
     await runMigrations(migrator);
+    await migrator.db.insert(schema.streams).values({ name: "API stream", slug: streamSlug });
+    await importCourse(migrator.db, {
+      slug: courseSlug,
+      title: "API course",
+      summary: "S",
+      streamSlug,
+      language: "en",
+      pricePaise: 0,
+      visibility: "public",
+      contentVersion: "1.0.0",
+      contentChecksum: "c".repeat(64),
+      publish: true,
+      modules: [{ slug: "m1", title: "M1", position: 1 }],
+      lessons: [
+        {
+          slug: "intro",
+          moduleSlug: "m1",
+          title: "Intro",
+          position: 1,
+          isPreview: true,
+          blocks: [],
+        },
+        {
+          slug: "deep",
+          moduleSlug: "m1",
+          title: "Deep",
+          position: 2,
+          isPreview: false,
+          blocks: [{ type: "paragraph", text: "Paid body" }],
+        },
+      ],
+    });
     await migrator.close();
     ({ server } = await createApp(parseEnv(source), source, pino({ level: "silent" })));
   });
@@ -91,5 +131,28 @@ describe.skipIf(!DATABASE_URL)("API with Better Auth and MySQL", () => {
   it("ignores a forged session cookie", async () => {
     const res = await trpc("me.whoami", "better-auth.session_token=forged.value");
     expect(res.json()).toEqual({ result: { data: { kind: "guest", roles: [] } } });
+  });
+
+  it("lets a learner find a free course, enrol, and read a non-preview lesson", async () => {
+    const { cookie } = await signUp();
+    const lesson = (who?: string) =>
+      trpc(
+        `catalogue.lesson?input=${encodeURIComponent(JSON.stringify({ courseSlug, lessonSlug: "deep" }))}`,
+        who,
+      );
+
+    expect((await lesson(cookie)).statusCode).toBe(403);
+    const enrol = await server.inject({
+      method: "POST",
+      url: "/trpc/enrollment.enrolFree",
+      headers: { cookie, "content-type": "application/json" },
+      payload: { courseSlug },
+    });
+    expect(enrol.json()).toEqual({ result: { data: { enrolled: true } } });
+
+    const res = await lesson(cookie);
+    expect(res.statusCode).toBe(200);
+    expect(JSON.stringify(res.json())).toContain("Paid body");
+    expect((await lesson()).statusCode).toBe(403);
   });
 });

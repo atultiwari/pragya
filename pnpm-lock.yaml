@@ -53,6 +53,9 @@ importers:
       '@pragya/authz':
         specifier: workspace:^
         version: link:../../packages/authz
+      '@pragya/content':
+        specifier: workspace:^
+        version: link:../../packages/content
       '@pragya/db':
         specifier: workspace:^
         version: link:../../packages/db
@@ -90,9 +93,18 @@ importers:
 
   apps/web:
     dependencies:
+      '@pragya/content':
+        specifier: workspace:^
+        version: link:../../packages/content
+      '@trpc/client':
+        specifier: ^11.22.1
+        version: 11.22.1(@trpc/server@11.22.1(typescript@6.0.3))(typescript@6.0.3)
       better-auth:
         specifier: ^1.7.14
         version: 1.7.14(drizzle-kit@0.31.11)(drizzle-orm@0.45.4(kysely@0.29.7)(mysql2@3.24.6(@types/node@26.6.6)))(mysql2@3.24.6(@types/node@26.6.6))(next@16.4.3(@types/node@26.6.6)(react-dom@19.3.1(react@19.3.1))(react@19.3.1))(react-dom@19.3.1(react@19.3.1))(react@19.3.1)(vitest@5.0.5)
+      marked:
+        specifier: ^18.1.2
+        version: 18.1.2
       next:
         specifier: ^16.4.3
         version: 16.4.3(@types/node@26.6.6)(react-dom@19.3.1(react@19.3.1))(react@19.3.1)
@@ -106,6 +118,9 @@ importers:
         specifier: ^4.6.7
         version: 4.6.7
     devDependencies:
+      '@pragya/api':
+        specifier: workspace:^
+        version: link:../api
       '@types/node':
         specifier: ^26.6.6
         version: 26.6.6
@@ -1233,6 +1248,13 @@ packages:
 
   '@swc/helpers@0.5.23':
     resolution: {integrity: sha512-5lSsMOTXURePglDfvuAQUqkGek9Hg2kksOYay2m0+XR++b2NWYL/4sWyuvVBIs8oKnJaxkdi9whaL/sqN13afw==}
+
+  '@trpc/client@11.22.1':
+    resolution: {integrity: sha512-flkAwF8bzzNCVJ5xcTMS+Az6Go/XK30ZIOGT94UJBYAmMq1w2tY7gk7+CIMiRUdvHzOYAVPitX2H+20qcIIomA==}
+    hasBin: true
+    peerDependencies:
+      '@trpc/server': 11.22.1
+      typescript: '>=5.7.2'
 
   '@trpc/server@11.22.1':
     resolution: {integrity: sha512-9SjWTS5iwENHOVPqpTjm0I1Os/CtuT6p8kDlovyEm00pXhpHX55tQM2vszJTEpcQhm/JfUz4ut/7Y9JZZQZo6A==}
@@ -3022,6 +3044,11 @@ snapshots:
   '@swc/helpers@0.5.23':
     dependencies:
       tslib: 2.8.1
+
+  '@trpc/client@11.22.1(@trpc/server@11.22.1(typescript@6.0.3))(typescript@6.0.3)':
+    dependencies:
+      '@trpc/server': 11.22.1(typescript@6.0.3)
+      typescript: 6.0.3
 
   '@trpc/server@11.22.1(typescript@6.0.3)':
     dependencies:

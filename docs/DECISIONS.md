@@ -128,6 +128,32 @@ Free and promotional videos use YouTube embeds. Paid lectures use Bunny Stream (
 - **Pack imports never touch institute courses:** an import refuses to overwrite a course owned by an institute.
 - **Malformed paths are reported, not crashed on:** paths containing NUL, and directories where a file is expected, show up as validation errors.
 
+### D-022 · 30 Oct 2026 · Catalogue and reader: who renders what
+
+- **Server-rendered:** `/courses` and `/courses/[slug]` render on the server with the _guest_ view, so they can be indexed for SEO. Enrolment state and the enrol button load in the browser with the session cookie (`CourseAccess`).
+- **Browser-rendered:** lessons render in the browser (`LessonReader`). The API is on a different host in production, so the web server never sees the API's session cookie (D-011).
+- **Hidden courses:** a course the caller may not see returns NOT_FOUND, never FORBIDDEN, so it isn't revealed. A visible course whose lesson needs enrolment returns `FORBIDDEN / ENROLMENT_REQUIRED`, which the reader turns into "Enrol to continue".
+- **Authz facts:** published, visibility, preview, enrolled and institute membership are always read from the database (`routers/facts.ts`).
+- **Free enrolment:** `enrollment.enrolFree` only handles free courses. Paid courses wait for Razorpay checkout.
+- **Content rendering:** the renderer turns inline Markdown into React elements with `marked`'s inline lexer and never uses `dangerouslySetInnerHTML`. It also checks link safety again, as defence in depth.
+- **Not yet built:** sims and quizzes show placeholders until those widgets exist. Bunny videos also show a placeholder until a Bunny library is configured.
+
+### D-023 · 30 Oct 2026 · Pack figures are served by the API, with the lesson's access rule
+
+- **Storage:** `pack-builder import` copies referenced figures to `CONTENT_ASSETS_DIR/<pack-id>/…` (default `<repo>/var/content`, gitignored). It is deliberately not a public web folder. The security review showed that public static files would let anyone download paid lessons' figures.
+- **Serving:** the API serves them at `/content/:course/*`. A figure is visible when the caller may read at least one lesson that uses it, and missing and forbidden figures both answer 404.
+- **Response headers:** only image types are served. SVGs carry a sandboxing CSP, `Cross-Origin-Resource-Policy: same-site` and `Cache-Control: private`.
+- **Dark mode:** figures get a white backing, because teaching figures are drawn for a white page.
+- **Production:** move the files to private object storage, with short-lived signed URLs issued by the same check.
+
+### D-024 · 30 Oct 2026 · Review fixes for the catalogue slice
+
+- **Lesson bodies:** the body is read only after access is granted (`getLessonBlocks`). Public course outlines no longer include internal lesson ids.
+- **Enrolment outcomes:** `enrol()` returns `created`, `existing`, `reactivated` or `revoked`.
+  - Free re-enrolment renews an expired enrolment.
+  - It never overrides a revocation such as a refund; that answers `FORBIDDEN / ENROLMENT_REVOKED` instead of a false success.
+- **Figure lookups:** `JSON_SEARCH` escapes `%` and `_`, so `figures/a_b.svg` never matches `figures/aXb.svg`.
+
 ## Open questions
 
 1. Platform commission %, and whether it differs for institute-sourced vs marketplace sales.

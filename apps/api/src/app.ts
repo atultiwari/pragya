@@ -1,5 +1,11 @@
 import { createAuth, createDevSenders, getSessionUserId, parseAuthEnv } from "@pragya/auth";
-import { createDb, createRoleAssignmentRepository, type DbHandle } from "@pragya/db";
+import {
+  createCatalogueRepository,
+  createDb,
+  createEnrollmentRepository,
+  createRoleAssignmentRepository,
+  type DbHandle,
+} from "@pragya/db";
 import type { FastifyBaseLogger, FastifyInstance } from "fastify";
 import { createSubjectResolver } from "./context.js";
 import type { Env } from "./env.js";
@@ -28,11 +34,18 @@ export async function createApp(
   const server = await buildServer(env, {
     logger,
     authHandler: (request) => auth.handler(request),
+    ...(env.CONTENT_ASSETS_DIR ? { contentAssetsDir: env.CONTENT_ASSETS_DIR } : {}),
+    services: {
+      catalogue: createCatalogueRepository(db.db),
+      enrollments: createEnrollmentRepository(db.db),
+    },
     resolveSubject: createSubjectResolver({
       getUserId: (headers) => getSessionUserId(auth, headers),
       listAssignments: (userId) => roles.listForUser(userId),
     }),
   });
+  if (!env.CONTENT_ASSETS_DIR)
+    logger.warn("CONTENT_ASSETS_DIR is not set; lesson figures will not be served");
   server.addHook("onClose", () => db.close());
   return { server, db };
 }

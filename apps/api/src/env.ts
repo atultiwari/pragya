@@ -5,6 +5,8 @@ const LOG_LEVELS = ["fatal", "error", "warn", "info", "debug", "trace", "silent"
 const envSchema = z.object({
   /** Required by the running API (src/app.ts); optional so unit tests need no database. */
   DATABASE_URL: z.string().min(1).optional(),
+  /** Folder where `pack-builder import` copies pack figures (served at /content/*). */
+  CONTENT_ASSETS_DIR: z.string().min(1).optional(),
   API_PORT: z.coerce.number().int().min(1).max(65535).default(4000),
   API_HOST: z.string().min(1).default("0.0.0.0"),
   /** Comma-separated list of browser origins allowed by CORS. */

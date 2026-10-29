@@ -18,6 +18,7 @@ export default function RootLayout({ children }: { readonly children: ReactNode 
             Pragya
           </Link>
           <span className="topnav-links">
+            <Link href="/courses">Courses</Link>
             <Link href="/sign-in">Sign in</Link>
             <Link href="/sign-up" className="button-link">
               Create account

@@ -1,16 +1,22 @@
 #!/usr/bin/env node
 import { createDb, importCourse } from "@pragya/db";
 import { mkdir, readFile, writeFile } from "node:fs/promises";
-import { dirname, resolve } from "node:path";
+import { dirname, join, resolve } from "node:path";
 import { parseArgs } from "node:util";
 import type { PackBundle } from "./bundle.js";
+import { copyFigures } from "./assets.js";
 import { loadPack } from "./load.js";
 import { toCourseImport } from "./to-import.js";
 
 const USAGE = `Usage:
   pack-builder check  <pack-dir>                     validate a pack
   pack-builder build  <pack-dir> [--out <file>]      validate and write a bundle (default dist/<id>@<version>.json)
-  pack-builder import <pack-dir | bundle.json> [--publish]   import into MySQL (needs DATABASE_URL)`;
+  pack-builder import <pack-dir | bundle.json> [--publish] [--assets-dir <dir>]
+      import into MySQL (needs DATABASE_URL) and copy figures to --assets-dir
+      (default $CONTENT_ASSETS_DIR, else var/content at the repo root)`;
+
+/** Outside any public folder: the API serves figures only to learners who may see them (D-023). */
+const DEFAULT_ASSETS_DIR = resolve(import.meta.dirname, "../../../var/content");
 
 async function loadOrExit(dir: string): Promise<PackBundle> {
   const result = await loadPack(dir);
@@ -51,7 +57,11 @@ async function main(argv: readonly string[]): Promise<void> {
   const { positionals, values } = parseArgs({
     args: [...argv],
     allowPositionals: true,
-    options: { out: { type: "string" }, publish: { type: "boolean" } },
+    options: {
+      out: { type: "string" },
+      publish: { type: "boolean" },
+      "assets-dir": { type: "string" },
+    },
   });
   const [command, target] = positionals;
   if (!command || !target) {
@@ -76,8 +86,20 @@ async function main(argv: readonly string[]): Promise<void> {
       console.warn(`✓ wrote ${out} (sha256 ${bundle.checksum.slice(0, 12)}…)`);
       return;
     }
-    case "import":
-      return importBundle(await readBundle(target), values.publish ?? false);
+    case "import": {
+      const bundle = await readBundle(target);
+      await importBundle(bundle, values.publish ?? false);
+      if (target.endsWith(".json")) {
+        console.warn("  note: figures are copied only when importing from a pack directory");
+        return;
+      }
+      const assetsDir = resolve(
+        values["assets-dir"] ?? process.env.CONTENT_ASSETS_DIR ?? DEFAULT_ASSETS_DIR,
+      );
+      const copied = await copyFigures(target, bundle, assetsDir);
+      console.warn(`  copied ${copied} figure(s) to ${join(assetsDir, bundle.manifest.id)}`);
+      return;
+    }
     default:
       console.error(`Unknown command "${command}"\n${USAGE}`);
       process.exit(2);
