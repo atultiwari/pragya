@@ -3,9 +3,16 @@ import helmet from "@fastify/helmet";
 import rateLimit from "@fastify/rate-limit";
 import { fastifyTRPCPlugin, type FastifyTRPCPluginOptions } from "@trpc/server/adapters/fastify";
 import type { Server } from "node:http";
-import Fastify, { type FastifyError, type FastifyHttpOptions, type FastifyInstance } from "fastify";
-import { createRequestContext } from "./context.js";
+import Fastify, {
+  type FastifyBaseLogger,
+  type FastifyError,
+  type FastifyHttpOptions,
+  type FastifyInstance,
+} from "fastify";
+import { registerAuthRoutes, type AuthHandler } from "./auth-route.js";
+import { guestResolver, toWebHeaders, type SubjectResolver } from "./context.js";
 import type { Env } from "./env.js";
+import { requestSerializer } from "./logging.js";
 import { appRouter, type AppRouter } from "./routers/index.js";
 
 export interface ApiEnvelope<T> {
@@ -23,9 +30,21 @@ const fail = (error: string): ApiEnvelope<never> => ({ success: false, data: nul
 const httpError = (statusCode: number, message: string): FastifyError =>
   Object.assign(new Error(message), { statusCode, code: "HTTP_ERROR", name: "HttpError" });
 
-export async function buildServer(env: Env): Promise<FastifyInstance> {
+export interface ServerDeps {
+  /** Works out who is calling; defaults to treating everyone as a guest. */
+  readonly resolveSubject?: SubjectResolver;
+  /** Better Auth's handler; /api/auth/* is mounted only when provided. */
+  readonly authHandler?: AuthHandler;
+  /** Shared logger, so auth and the server log through one pino instance. */
+  readonly logger?: FastifyBaseLogger;
+}
+
+export async function buildServer(env: Env, deps: ServerDeps = {}): Promise<FastifyInstance> {
+  const resolveSubject = deps.resolveSubject ?? guestResolver;
   const options: FastifyHttpOptions<Server> = {
-    logger: { level: env.LOG_LEVEL },
+    ...(deps.logger
+      ? { loggerInstance: deps.logger }
+      : { logger: { level: env.LOG_LEVEL, serializers: { req: requestSerializer } } }),
     // Trust only the configured number of proxy hops; with 0, X-Forwarded-For is ignored.
     trustProxy: (_address, hop) => hop < env.TRUST_PROXY_HOPS,
     // tRPC puts procedure paths in the URL; batched calls exceed Fastify's 100-char default.
@@ -56,12 +75,16 @@ export async function buildServer(env: Env): Promise<FastifyInstance> {
 
   app.get("/health", () => ok({ status: "ok" }));
 
+  if (deps.authHandler) registerAuthRoutes(app, deps.authHandler, env.AUTH_RATE_LIMIT_PER_MINUTE);
+
   await app.register(fastifyTRPCPlugin, {
     prefix: "/trpc",
     trpcOptions: {
       router: appRouter,
       maxBatchSize: MAX_TRPC_BATCH,
-      createContext: ({ req }) => createRequestContext(req),
+      createContext: async ({ req }) => ({
+        subject: await resolveSubject(toWebHeaders(req.headers)),
+      }),
       onError: ({ error, path, req }) => {
         if (error.code === "INTERNAL_SERVER_ERROR")
           req.log.error({ err: error, path }, "tRPC error");

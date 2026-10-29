@@ -1,18 +1,38 @@
-import { guest, type Subject } from "@pragya/authz";
-import type { FastifyRequest } from "fastify";
+import { guest, user, type RoleAssignment, type Subject } from "@pragya/authz";
+import type { IncomingHttpHeaders } from "node:http";
 
 export interface RequestContext {
   readonly subject: Subject;
 }
 
-/**
- * Resolves who is calling. Until Better Auth sessions land (next Phase 0 step),
- * every caller is a guest, which is the safe default.
- */
-export function resolveSubject(_request: FastifyRequest): Subject {
-  return guest();
+export type SubjectResolver = (headers: Headers) => Promise<Subject>;
+
+export interface SubjectSources {
+  /** The session's user id, or null when there is no valid session. */
+  readonly getUserId: (headers: Headers) => Promise<string | null>;
+  readonly listAssignments: (userId: string) => Promise<readonly RoleAssignment[]>;
 }
 
-export function createRequestContext(request: FastifyRequest): RequestContext {
-  return { subject: resolveSubject(request) };
+/**
+ * Builds the caller's authz subject from their session and stored role grants.
+ * Lookup failures propagate (→ 500) rather than quietly treating the caller as a guest.
+ */
+export function createSubjectResolver(sources: SubjectSources): SubjectResolver {
+  return async (headers) => {
+    const userId = await sources.getUserId(headers);
+    if (userId === null) return guest();
+    return user(userId, await sources.listAssignments(userId));
+  };
+}
+
+/** Resolver used when no auth is configured: everyone is a guest. */
+export const guestResolver: SubjectResolver = async () => guest();
+
+export function toWebHeaders(nodeHeaders: IncomingHttpHeaders): Headers {
+  const headers = new Headers();
+  for (const [name, value] of Object.entries(nodeHeaders)) {
+    if (value === undefined) continue;
+    for (const item of Array.isArray(value) ? value : [value]) headers.append(name, item);
+  }
+  return headers;
 }

@@ -112,3 +112,110 @@ h3 {
 .status-offline {
   color: var(--bad);
 }
+
+.topnav {
+  max-width: 960px;
+  margin: 0 auto;
+  padding: 16px;
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  gap: 16px;
+}
+.brand {
+  font-weight: 700;
+  color: var(--accent);
+  text-decoration: none;
+  font-size: 1.1rem;
+}
+.topnav-links {
+  display: flex;
+  gap: 16px;
+  align-items: center;
+}
+a {
+  color: var(--accent);
+}
+.button-link,
+button {
+  background: var(--accent);
+  color: var(--bg);
+  border: 0;
+  border-radius: 8px;
+  padding: 10px 16px;
+  font: inherit;
+  font-weight: 600;
+  cursor: pointer;
+  text-decoration: none;
+}
+button:disabled {
+  opacity: 0.6;
+  cursor: progress;
+}
+.link-button {
+  background: none;
+  color: var(--accent);
+  padding: 0;
+  text-decoration: underline;
+  font-weight: 400;
+}
+.muted {
+  color: var(--muted);
+}
+
+.auth-page {
+  max-width: 440px;
+}
+.auth-form {
+  display: grid;
+  gap: 16px;
+  margin: 24px 0;
+}
+.auth-switch {
+  color: var(--muted);
+}
+.field {
+  display: grid;
+  gap: 6px;
+}
+.field label {
+  font-weight: 600;
+  font-size: 0.95rem;
+}
+.field input {
+  font: inherit;
+  padding: 10px 12px;
+  border-radius: 8px;
+  border: 1px solid var(--border);
+  background: var(--surface);
+  color: var(--text);
+}
+.field input[aria-invalid="true"] {
+  border-color: var(--bad);
+}
+.field-error,
+.form-error {
+  color: var(--bad);
+  margin: 0;
+  font-size: 0.9rem;
+}
+.form-error {
+  padding: 10px 12px;
+  border: 1px solid var(--bad);
+  border-radius: 8px;
+}
+.tabs {
+  display: flex;
+  gap: 8px;
+  margin-top: 16px;
+}
+.tab {
+  background: var(--surface);
+  color: var(--text);
+  border: 1px solid var(--border);
+}
+.tab-active {
+  background: var(--accent);
+  color: var(--bg);
+  border-color: var(--accent);
+}

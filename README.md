@@ -30,15 +30,23 @@ Requires Node 22+, pnpm 9 and Docker.
 cp .env.example .env   # then set real local passwords
 docker compose up -d mysql
 pnpm install
-pnpm --filter @pragya/db db:migrate
-pnpm dev                # API on :4000, web on :3000
+pnpm build                                   # builds the CLIs in packages/db
+pnpm --filter @pragya/db seed                # migrate + launch streams
+pnpm dev                                     # API on :4000, web on :3000
+```
+
+Sign up at http://localhost:3000/sign-up. In development, verification emails and mobile OTPs are written to the API log instead of being sent. To make yourself an admin:
+
+```bash
+pnpm --filter @pragya/db grant-role --email you@example.com --role superadmin
 ```
 
 Checks: `pnpm lint`, `pnpm typecheck`, `pnpm test` (the MySQL integration tests run when `DATABASE_URL` is set) and `pnpm build`.
 
-| Path             | What                                                                            |
-| ---------------- | ------------------------------------------------------------------------------- |
-| `packages/authz` | Roles, scopes and the `can()` policy, with a role × action × tenant test matrix |
-| `packages/db`    | Drizzle MySQL schema, migrations and tenant-scoped repositories                 |
-| `apps/api`       | Fastify + tRPC API with health, CORS, helmet, rate limits and envelope errors   |
-| `apps/web`       | Next.js web app (landing page for now)                                          |
+| Path             | What                                                                                   |
+| ---------------- | -------------------------------------------------------------------------------------- |
+| `packages/authz` | Roles, scopes and the `can()` policy, with a role × action × tenant test matrix        |
+| `packages/db`    | Drizzle MySQL schema, migrations and tenant-scoped repositories                        |
+| `packages/auth`  | Better Auth setup: email + password, mobile OTP, optional Google; dev mail/SMS senders |
+| `apps/api`       | Fastify + tRPC API with health, CORS, helmet, rate limits and envelope errors          |
+| `apps/web`       | Next.js web app (landing page for now)                                                 |

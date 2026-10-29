@@ -51,6 +51,52 @@ Free and promotional videos use YouTube embeds. Paid lectures use Bunny Stream (
 - **Why:** this keeps marketplace onboarding (KYC, payouts) separate from institute staffing.
 - **Also:** authorisation lives in `packages/authz`. Its context facts (published, preview, enrolled, owner) come from trusted server data, never from clients.
 
+### D-010 · 29 Oct 2026 · Overnight autonomy: merge reviewed, green PRs
+
+- **Context:** the user asked for non-stop work overnight, with decisions made on their behalf.
+- **What:** each slice gets its own branch and PR. It is merged to `main` (squash) only after a review pass and green CI, and the next slice starts from `main`.
+- **Why:** this avoids a tall stack of dependent PRs. Any merge can be undone with `git revert`.
+
+### D-011 · 29 Oct 2026 · Auth lives in the API at `/api/auth` (Better Auth 1.7)
+
+- **What:** the web app calls the API cross-origin with `credentials: "include"`. Cookies are SameSite=Lax, which works because localhost:3000 and localhost:4000 are the same _site_.
+- **Production constraint:** web and API must share a registrable domain (e.g. `pragya.ai` + `api.pragya.ai`). Mobile (Expo) will use Better Auth's bearer/expo plugin, not cookies.
+- **Origin check:** Better Auth's origin/CSRF check is forced on (`disableOriginCheck: false`). The library turns it off when `NODE_ENV=test`, which would have hidden a regression.
+
+### D-012 · 29 Oct 2026 · Sign-in methods and policies
+
+- **Methods:** email + password, and mobile OTP via the phone-number plugin. Google turns on when `GOOGLE_CLIENT_ID` and `GOOGLE_CLIENT_SECRET` are both set.
+- **Phone-only accounts:** verifying an OTP creates the account. The user gets a placeholder email `<digits>@phone.pragya.invalid`, because `.invalid` is guaranteed unroutable. The UI shows "Signed in with mobile" instead of that address.
+- **Number entry:** a 10-digit number (optionally with a leading 0) is read as an Indian mobile (+91). Other countries need a `+` prefix.
+- **Passwords:** 10–128 characters.
+- **OTPs:** 6 digits, valid 5 minutes, 3 attempts.
+- **Sessions:** 30 days, refreshed daily.
+- **Rate limit:** `/api/auth/*` allows 20 requests per minute per IP, on top of the global limit.
+- **Email verification:** always required in production. Elsewhere it is opt-in (`AUTH_REQUIRE_EMAIL_VERIFICATION`).
+
+### D-013 · 29 Oct 2026 · Dev mail/SMS senders until providers are chosen
+
+- **What:** verification links, reset links and OTPs are written to the API log in development. `createDevSenders` throws in production, so a missing provider fails at startup instead of silently dropping messages.
+- **Planned providers:** Resend or SES for email, MSG91 for SMS (PLAN.md §3).
+
+### D-014 · 29 Oct 2026 · Operator bootstrap via CLI
+
+- **What:** `pnpm --filter @pragya/db grant-role --email … --role superadmin [--scope type:id]` grants roles to an existing account. `pnpm --filter @pragya/db seed` migrates the database and upserts the launch streams. Both are idempotent.
+- **Why:** the first superadmin needs a path that does not go through the API.
+
+### D-015 · 29 Oct 2026 · Phone column renamed with two migrations
+
+- **What:** `users.phone` became `phone_number`, plus `phone_number_verified`, for Better Auth. drizzle-kit can only resolve a rename interactively, and nothing is in production yet, so it ships as a drop migration (0001) followed by an add migration (0002).
+
+### D-016 · 29 Oct 2026 · Auth hardening from the security review
+
+- **Log-only senders need explicit opt-in:** set `AUTH_DEV_SENDERS=true`. A staging deploy with an unusual `NODE_ENV` therefore can't silently write live OTPs or reset links to its logs. The setting is refused in production.
+- **Request logs redact one-time credentials:** `token`, `code` and `otp` parameters and reset-password path tokens are masked.
+- **Better Auth sees the client IP that Fastify trusts:** the bridge deletes client-supplied `X-Forwarded-For`, `X-Real-IP` and `Forwarded` headers and sets the address itself. Better Auth's rate limits and session IPs can't be spoofed.
+- **`.invalid` email addresses are rejected at sign-up and change-email:** this stops anyone claiming a phone account's placeholder address.
+- **`grant-role` refuses unverified emails:** pass `--allow-unverified` to override, locally only. It also prints the user id, so the operator can confirm who received the grant.
+- **Still open:** a per-phone daily OTP cap in front of the SMS provider, to limit SMS-pumping cost. This comes with the MSG91 integration.
+
 ## Open questions
 
 1. Platform commission %, and whether it differs for institute-sourced vs marketplace sales.
@@ -61,3 +107,4 @@ Free and promotional videos use YouTube embeds. Paid lectures use Bunny Stream (
 6. Hosting at launch: self-hosted VPS (Coolify) vs managed MySQL (RDS / PlanetScale).
 7. Languages: English in v1 with a Hindi glossary, and when the full Hindi UI arrives.
 8. Guest access to the AI tutor: small quota or teaser only?
+9. **Where is the book pipeline's source data?** The earlier draft refers to `build.py`, a 1,430-question bank, weightage tiers and per-chapter assets, but none of these is on this machine. `~/Projects/Harshmohan-10` holds EPUBs of the published textbook. That book is copyrighted and this repository is public, so none of it is imported. The pack-builder is built against a schema with a small original sample pack, and the real bank plugs in once its location is known.

@@ -8,6 +8,20 @@
       "when": 1793293959242,
       "tag": "0000_init",
       "breakpoints": true
+    },
+    {
+      "idx": 1,
+      "version": "5",
+      "when": 1793294465574,
+      "tag": "0001_drop_legacy_phone",
+      "breakpoints": true
+    },
+    {
+      "idx": 2,
+      "version": "5",
+      "when": 1793294466133,
+      "tag": "0002_auth",
+      "breakpoints": true
     }
   ]
 }
