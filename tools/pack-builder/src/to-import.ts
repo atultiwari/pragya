@@ -26,5 +26,13 @@ export function toCourseImport(
       moduleSlug: moduleId,
       ...lesson,
     })),
+    questions: bundle.questions.map((question) => ({
+      slug: question.id,
+      lessonSlug: question.lessonId,
+      format: question.format,
+      difficulty: question.difficulty ?? null,
+      tags: question.tags ?? [],
+      body: { ...question },
+    })),
   };
 }

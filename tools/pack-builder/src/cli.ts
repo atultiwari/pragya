@@ -41,13 +41,8 @@ async function importBundle(bundle: PackBundle, publish: boolean): Promise<void>
     const summary = await importCourse(handle.db, toCourseImport(bundle, { publish }));
     console.warn(
       `✓ ${summary.created ? "created" : "updated"} course ${bundle.manifest.id}@${bundle.manifest.version} ` +
-        `(${summary.modules} modules, ${summary.lessons} lessons${publish ? ", published" : ""}) [${summary.courseId}]`,
+        `(${summary.modules} modules, ${summary.lessons} lessons, ${summary.questions} questions${publish ? ", published" : ""}) [${summary.courseId}]`,
     );
-    if (bundle.questions.length > 0) {
-      console.warn(
-        `  note: ${bundle.questions.length} questions validated; storing them arrives with the assessment slice`,
-      );
-    }
   } finally {
     await handle.close();
   }

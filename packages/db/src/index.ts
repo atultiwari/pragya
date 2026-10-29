@@ -24,6 +24,7 @@ export {
   type ImportSummary,
   type LessonImport,
   type ModuleImport,
+  type QuestionImport,
 } from "./repositories/course-import.js";
 export {
   createCatalogueRepository,
@@ -42,3 +43,10 @@ export {
   type EnrolOutcome,
   type EnrollmentRepository,
 } from "./repositories/enrollments.js";
+export {
+  createQuestionRepository,
+  type AttemptInput,
+  type QuestionRepository,
+  type QuestionRepositoryOptions,
+  type StoredQuestion,
+} from "./repositories/questions.js";

@@ -1,9 +1,10 @@
-import type { CatalogueRepository, EnrollmentRepository } from "@pragya/db";
+import type { CatalogueRepository, EnrollmentRepository, QuestionRepository } from "@pragya/db";
 
 /** Data access the procedures need; real repositories in the app, in-memory fakes in tests. */
 export interface Services {
   readonly catalogue: CatalogueRepository;
   readonly enrollments: EnrollmentRepository;
+  readonly questions: QuestionRepository;
 }
 
 const unavailable = (): never => {
@@ -20,4 +21,5 @@ export const NO_SERVICES: Services = {
     getFigureUse: unavailable,
   },
   enrollments: { isEnrolled: unavailable, enrol: unavailable, isInstituteMember: unavailable },
+  questions: { listPools: unavailable, findInPools: unavailable, recordAttempt: unavailable },
 };

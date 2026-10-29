@@ -1,7 +1,8 @@
 import { and, eq, notInArray } from "drizzle-orm";
 import { ulid } from "ulid";
 import type { Database } from "../client.js";
-import { courses, lessons, modules, streams } from "../schema/index.js";
+import type { QUESTION_FORMATS } from "../schema/index.js";
+import { courses, lessons, modules, questions, streams } from "../schema/index.js";
 
 export interface ModuleImport {
   readonly slug: string;
@@ -32,6 +33,18 @@ export interface CourseImport {
   readonly publish: boolean;
   readonly modules: readonly ModuleImport[];
   readonly lessons: readonly LessonImport[];
+  /** Optional so callers that only manage lessons keep working; omitted means "no questions". */
+  readonly questions?: readonly QuestionImport[];
+}
+
+export interface QuestionImport {
+  readonly slug: string;
+  readonly lessonSlug: string;
+  readonly format: (typeof QUESTION_FORMATS)[number];
+  readonly difficulty: "easy" | "medium" | "hard" | null;
+  readonly tags: readonly string[];
+  /** The full validated question from the pack. */
+  readonly body: Record<string, unknown>;
 }
 
 export interface ImportSummary {
@@ -39,6 +52,7 @@ export interface ImportSummary {
   readonly created: boolean;
   readonly modules: number;
   readonly lessons: number;
+  readonly questions: number;
 }
 
 type Tx = Parameters<Parameters<Database["transaction"]>[0]>[0];
@@ -61,6 +75,12 @@ function assertConsistent(input: CourseImport): void {
   if (orphan)
     throw new CourseImportError(
       `lesson "${orphan.slug}" refers to unknown module "${orphan.moduleSlug}"`,
+    );
+  const lessonSlugs = new Set(input.lessons.map((l) => l.slug));
+  const orphanQuestion = (input.questions ?? []).find((q) => !lessonSlugs.has(q.lessonSlug));
+  if (orphanQuestion)
+    throw new CourseImportError(
+      `question "${orphanQuestion.slug}" refers to unknown lesson "${orphanQuestion.lessonSlug}"`,
     );
 }
 
@@ -143,7 +163,7 @@ async function upsertLessons(
   courseId: string,
   items: readonly LessonImport[],
   moduleIds: ReadonlyMap<string, string>,
-): Promise<void> {
+): Promise<Map<string, string>> {
   const existing = await tx
     .select({ id: lessons.id, slug: lessons.slug })
     .from(lessons)
@@ -153,8 +173,42 @@ async function upsertLessons(
     const values = { ...item, moduleId: moduleIds.get(moduleSlug) ?? "", courseId };
     const id = ids.get(item.slug);
     if (id) await tx.update(lessons).set(values).where(eq(lessons.id, id));
-    else await tx.insert(lessons).values({ id: ulid(), ...values });
+    else {
+      const newId = ulid();
+      await tx.insert(lessons).values({ id: newId, ...values });
+      ids.set(item.slug, newId);
+    }
   }
+  return ids;
+}
+
+/** Upserts questions by slug and deletes those no longer in the pack. */
+async function syncQuestions(
+  tx: Tx,
+  courseId: string,
+  items: readonly QuestionImport[],
+  lessonIds: ReadonlyMap<string, string>,
+): Promise<void> {
+  const existing = await tx
+    .select({ id: questions.id, slug: questions.slug })
+    .from(questions)
+    .where(eq(questions.courseId, courseId));
+  const ids = new Map(existing.map((row) => [row.slug, row.id]));
+  for (const { lessonSlug, ...item } of items) {
+    const values = { ...item, lessonId: lessonIds.get(lessonSlug) ?? "", courseId };
+    const id = ids.get(item.slug);
+    if (id) await tx.update(questions).set(values).where(eq(questions.id, id));
+    else await tx.insert(questions).values({ id: ulid(), ...values });
+  }
+  const keep = items.map((q) => q.slug);
+  await tx
+    .delete(questions)
+    .where(
+      and(
+        eq(questions.courseId, courseId),
+        keep.length ? notInArray(questions.slug, keep) : undefined,
+      ),
+    );
 }
 
 async function deleteRemoved(tx: Tx, courseId: string, input: CourseImport): Promise<void> {
@@ -196,13 +250,15 @@ export async function importCourse(db: Database, input: CourseImport): Promise<I
       );
     const course = await upsertCourse(tx, input, stream.id);
     const moduleIds = await upsertModules(tx, course.id, input.modules);
-    await upsertLessons(tx, course.id, input.lessons, moduleIds);
+    const lessonIds = await upsertLessons(tx, course.id, input.lessons, moduleIds);
+    await syncQuestions(tx, course.id, input.questions ?? [], lessonIds);
     await deleteRemoved(tx, course.id, input);
     return {
       courseId: course.id,
       created: course.created,
       modules: input.modules.length,
       lessons: input.lessons.length,
+      questions: input.questions?.length ?? 0,
     };
   });
 }

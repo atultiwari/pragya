@@ -154,6 +154,18 @@ Free and promotional videos use YouTube embeds. Paid lectures use Bunny Stream (
   - It never overrides a revocation such as a refund; that answers `FORBIDDEN / ENROLMENT_REVOKED` instead of a false success.
 - **Figure lookups:** `JSON_SEARCH` escapes `%` and `_`, so `figures/a_b.svg` never matches `figures/aXb.svg`.
 
+### D-025 · 30 Oct 2026 · Question bank and practice
+
+- **Storage:** questions are imported with their course (`questions` table, keyed by pack slug, cascading with their lesson). The full validated question is stored as JSON, but only `@pragya/assessment`'s `learnerView` (no key, model answer or explanation) is sent before the learner answers.
+- **Scoring:** scoring happens on the server (`practice.answer`). It reveals the key, explanation and any "debatable" note, and records an attempt for signed-in learners. Guests can practise preview quizzes without anything being stored.
+- **Pools:** a quiz is the pool a lesson embeds (`quiz` block: lesson slug or tag). Its questions are listable and answerable only through a lesson the caller may read. That one access path (`loadReadableLesson`) also guards lesson bodies.
+- **Matching:** fill-in-the-blank answers are compared ignoring case and repeated whitespace. Multi-select needs the exact set.
+- **Descriptive answers:** these formats (saq/laq/why/case) show the model answer for self-assessment and record `is_correct = null`. AI rubric marking comes in Phase 4 (PLAN.md §4.4).
+- **Per-question access (review fix):** a tag pool can reach questions of other lessons, so each question is shown or answered only if the caller could read _its own_ lesson. Before this, a preview lesson could expose paid questions and their keys.
+- **Attempt limit (review fix):** a signed-in learner can record at most 30 attempts per minute. Past that, `practice.answer` returns TOO_MANY_REQUESTS, which caps table growth and slows key harvesting.
+- **No draft-lesson risk:** publishing is per course, and course visibility is already checked, so draft lessons can't leak through pools.
+- **Not yet built:** spaced repetition, mock exams from blueprints and mastery scores. Attempts are already stored in the shape they will need.
+
 ## Open questions
 
 1. Platform commission %, and whether it differs for institute-sourced vs marketplace sales.

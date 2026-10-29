@@ -80,7 +80,12 @@ export function LessonReader({ courseSlug, lessonSlug }: LessonReaderProps) {
           <h1>{lesson.title}</h1>
           <article className="lesson-body">
             {(lesson.blocks as Block[]).map((block, index) => (
-              <BlockView key={index} block={block} assetBase={contentAssetBase(courseSlug)} />
+              <BlockView
+                key={index}
+                block={block}
+                assetBase={contentAssetBase(courseSlug)}
+                lesson={{ courseSlug, lessonSlug }}
+              />
             ))}
           </article>
           <nav className="lesson-nav" aria-label="Lesson navigation">

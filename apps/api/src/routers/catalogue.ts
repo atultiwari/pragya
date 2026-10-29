@@ -1,14 +1,13 @@
 import { can } from "@pragya/authz";
 import { slugSchema } from "@pragya/content";
-import { TRPCError } from "@trpc/server";
 import { z } from "zod";
 import { publicProcedure, router } from "../trpc.js";
 import { courseFacts } from "./facts.js";
+import { courseNotFound, loadReadableLesson } from "./lesson-access.js";
 
 const MAX_PAGE_SIZE = 50;
 
-/** Same response whether a course is missing or hidden, so existence isn't leaked. */
-const notFound = () => new TRPCError({ code: "NOT_FOUND", message: "Course not found" });
+const notFound = courseNotFound;
 
 export const catalogueRouter = router({
   listCourses: publicProcedure
@@ -53,16 +52,7 @@ export const catalogueRouter = router({
   lesson: publicProcedure
     .input(z.object({ courseSlug: slugSchema, lessonSlug: slugSchema }))
     .query(async ({ ctx, input }) => {
-      const lesson = await ctx.services.catalogue.getLesson(input.courseSlug, input.lessonSlug);
-      if (!lesson) throw notFound();
-      const facts = await courseFacts(ctx.subject, ctx.services, lesson.course);
-      if (!can(ctx.subject, "course.read", facts)) throw notFound();
-      if (!can(ctx.subject, "lesson.read", { ...facts, isPreview: lesson.isPreview })) {
-        // A stable machine-readable message the web app turns into an "Enrol to continue" prompt.
-        throw new TRPCError({ code: "FORBIDDEN", message: "ENROLMENT_REQUIRED" });
-      }
-      // The body is read only after access is granted.
-      const blocks = await ctx.services.catalogue.getLessonBlocks(lesson.id);
+      const { lesson, blocks } = await loadReadableLesson(ctx, input.courseSlug, input.lessonSlug);
       const { id: _id, course, ...visible } = lesson;
       return { ...visible, blocks, course: { slug: course.slug, title: course.title } };
     }),
