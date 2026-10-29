@@ -3,6 +3,7 @@ import { z } from "zod";
 import { platformProcedure, publicProcedure, router } from "../trpc.js";
 import { catalogueRouter } from "./catalogue.js";
 import { enrollmentRouter } from "./enrollment.js";
+import { practiceRouter } from "./practice.js";
 
 /** Only scope identifiers are accepted from clients; facts such as enrolment are resolved server-side. */
 const scopeInput = z
@@ -37,6 +38,7 @@ export const appRouter = router({
   }),
   catalogue: catalogueRouter,
   enrollment: enrollmentRouter,
+  practice: practiceRouter,
   admin: router({
     ping: platformProcedure("platform.manage").query(() => ({ pong: true })),
   }),

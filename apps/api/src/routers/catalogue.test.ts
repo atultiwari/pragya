@@ -1,7 +1,7 @@
 import { guest, user, type Subject } from "@pragya/authz";
 import type { CourseOutline, CoursePage, EnrolInput, EnrolOutcome, LessonView } from "@pragya/db";
 import { describe, expect, it } from "vitest";
-import type { Services } from "../services.js";
+import { NO_SERVICES, type Services } from "../services.js";
 import { createCaller } from "../trpc.js";
 import { appRouter } from "./index.js";
 
@@ -81,6 +81,7 @@ function fakeServices({
       },
       isInstituteMember: async () => member,
     },
+    questions: NO_SERVICES.questions,
   };
   return { services, enrolments, bodyReads };
 }

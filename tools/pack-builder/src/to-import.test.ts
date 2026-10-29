@@ -36,7 +36,16 @@ const bundle = signBundle({
       blocks: [{ type: "paragraph", text: "x" }],
     },
   ],
-  questions: [],
+  questions: [
+    {
+      id: "q1",
+      lessonId: "overview",
+      format: "true_false",
+      stem: "S?",
+      answer: true,
+      tags: ["intro"],
+    },
+  ],
 });
 
 describe("toCourseImport", () => {
@@ -61,6 +70,23 @@ describe("toCourseImport", () => {
           position: 1,
           isPreview: true,
           blocks: [{ type: "paragraph", text: "x" }],
+        },
+      ],
+      questions: [
+        {
+          slug: "q1",
+          lessonSlug: "overview",
+          format: "true_false",
+          difficulty: null,
+          tags: ["intro"],
+          body: {
+            id: "q1",
+            lessonId: "overview",
+            format: "true_false",
+            stem: "S?",
+            answer: true,
+            tags: ["intro"],
+          },
         },
       ],
     });

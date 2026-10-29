@@ -4,3 +4,4 @@ export * from "./tenancy.js";
 export * from "./catalogue.js";
 export * from "./learning.js";
 export * from "./audit.js";
+export * from "./assessment.js";

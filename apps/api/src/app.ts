@@ -3,6 +3,7 @@ import {
   createCatalogueRepository,
   createDb,
   createEnrollmentRepository,
+  createQuestionRepository,
   createRoleAssignmentRepository,
   type DbHandle,
 } from "@pragya/db";
@@ -38,6 +39,7 @@ export async function createApp(
     services: {
       catalogue: createCatalogueRepository(db.db),
       enrollments: createEnrollmentRepository(db.db),
+      questions: createQuestionRepository(db.db),
     },
     resolveSubject: createSubjectResolver({
       getUserId: (headers) => getSessionUserId(auth, headers),

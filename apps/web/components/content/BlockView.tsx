@@ -1,10 +1,13 @@
 import type { Block } from "@pragya/content";
+import { PracticeQuiz } from "../practice/PracticeQuiz";
 import { Inline } from "./Inline";
 
 interface BlockViewProps {
   readonly block: Block;
   /** URL prefix for this pack's figures, e.g. /content/<course-slug>. */
   readonly assetBase: string;
+  /** Where the block sits; interactive blocks (quizzes) need it to talk to the API. */
+  readonly lesson?: { readonly courseSlug: string; readonly lessonSlug: string };
 }
 
 function Placeholder({ label, detail }: { readonly label: string; readonly detail: string }) {
@@ -34,7 +37,7 @@ function Video({ block }: { readonly block: Extract<Block, { type: "video" }> })
   );
 }
 
-export function BlockView({ block, assetBase }: BlockViewProps) {
+export function BlockView({ block, assetBase, lesson }: BlockViewProps) {
   switch (block.type) {
     case "heading": {
       const Tag = `h${block.level}` as const;
@@ -117,11 +120,14 @@ export function BlockView({ block, assetBase }: BlockViewProps) {
         <Placeholder label="Interactive simulation" detail={`"${block.ref}" will appear here.`} />
       );
     case "quiz":
-      return (
-        <Placeholder
-          label="Practice questions"
-          detail="Questions for this topic arrive with practice mode."
+      return lesson ? (
+        <PracticeQuiz
+          courseSlug={lesson.courseSlug}
+          lessonSlug={lesson.lessonSlug}
+          poolRef={block.poolRef}
         />
+      ) : (
+        <Placeholder label="Practice questions" detail="Open this lesson to practise." />
       );
   }
 }
