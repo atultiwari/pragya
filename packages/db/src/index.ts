@@ -17,3 +17,11 @@ export {
 } from "./repositories/batches.js";
 export { upsertStreams, type StreamSeed } from "./repositories/streams.js";
 export { findUserByEmail, type UserIdentity } from "./repositories/users.js";
+export {
+  CourseImportError,
+  importCourse,
+  type CourseImport,
+  type ImportSummary,
+  type LessonImport,
+  type ModuleImport,
+} from "./repositories/course-import.js";

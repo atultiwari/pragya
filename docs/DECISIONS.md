@@ -97,6 +97,37 @@ Free and promotional videos use YouTube embeds. Paid lectures use Bunny Stream (
 - **`grant-role` refuses unverified emails:** pass `--allow-unverified` to override, locally only. It also prints the user id, so the operator can confirm who received the grant.
 - **Still open:** a per-phone daily OTP cap in front of the SMS provider, to limit SMS-pumping cost. This comes with the MSG91 integration.
 
+### D-017 · 30 Oct 2026 · Content packs: Markdown lessons + JSON questions + manifest
+
+- **Layout:** a pack is a folder with `manifest.json`, a Markdown file per lesson, JSON question files and figures.
+- **Builder:** `tools/pack-builder` validates everything against `packages/content` (Zod) and reports _all_ problems in one pass. It writes a bundle with a SHA-256 checksum over canonical JSON, then imports it into MySQL.
+- **Markdown conventions:** `##`–`####` headings (the lesson title comes from the manifest), GitHub-style alerts `> [!CLINICAL]` for callouts, image-only paragraphs for figures, and fenced `video` / `sim` / `quiz` blocks with a JSON body.
+- **Safety:** raw HTML, remote images, `..` paths and symlinks that escape the pack are rejected.
+- **Why:** authors write plain Markdown, which suits the existing book pipeline and Claude-assisted authoring, while the app stores structured blocks (PLAN.md §1).
+
+### D-018 · 30 Oct 2026 · Stable slugs; questions validated but not yet stored
+
+- **Slugs:** modules and lessons carry a `slug`, unique per course. Re-importing a pack updates rows in place, so lesson ids survive and future progress records stay valid. Position is no longer unique, which lets a re-import reorder rows.
+- **Imports:** marketplace imports must be `public`. Institute-only packs need an owning institute, which comes with institute onboarding.
+- **Questions:** they are validated (formats mcq, scenario_mcq, multi_select, true_false, fib, saq, laq, why, case, with yearsAsked, difficulty and debatable flags). They are stored when the assessment slice adds the question-bank tables.
+
+### D-019 · 30 Oct 2026 · Integration tests use their own database
+
+- **What:** tests read `TEST_DATABASE_URL` (`pragya_test`, created by `docker/mysql-init` on a fresh volume). They used to share the dev database and filled it with fixtures.
+- **Ordering lesson:** migration 0003 is hand-ordered to create replacement indexes before dropping old ones. MySQL refuses to drop an index that a foreign key is using. A failed DDL statement is not rolled back, so migrations are always tested from an empty database (as CI does).
+
+### D-020 · 30 Oct 2026 · The sample pack is original and awaits expert review
+
+`content/sample-pathology` (3 lessons, 8 questions on cell injury) was written from scratch, to exercise every block type. It is not textbook content, and a subject expert must review it before any learner sees it.
+
+### D-021 · 30 Oct 2026 · Content hardening from the code review
+
+- **Unsafe inline content is rejected at build time:** inline HTML, inline images, and links that are not http(s) or mailto (e.g. `javascript:`, `data:`) are refused in _every_ text block, including list items, table cells and callouts. Renderers still escape, but they never receive markup that would need it.
+- **Checksums are reproducible:** keys are sorted by code unit, not locale, so every machine produces the same checksum.
+- **Migration 0003 is safe on a populated database:** slugs are added nullable, backfilled as `legacy-<id>`, then made NOT NULL. This was verified by upgrading a database that already held modules and lessons.
+- **Pack imports never touch institute courses:** an import refuses to overwrite a course owned by an institute.
+- **Malformed paths are reported, not crashed on:** paths containing NUL, and directories where a file is expected, show up as validation errors.
+
 ## Open questions
 
 1. Platform commission %, and whether it differs for institute-sourced vs marketplace sales.

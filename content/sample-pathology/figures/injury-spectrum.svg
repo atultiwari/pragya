@@ -1,0 +1,28 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 640 160" role="img" aria-labelledby="t">
+  <title id="t">Normal, adapted, reversibly injured and dead cell</title>
+  <g font-family="system-ui, sans-serif" font-size="14" text-anchor="middle" fill="#1d1b18">
+    <circle cx="80" cy="70" r="40" fill="#f3e3d3" stroke="#8a3b12" stroke-width="2"/>
+    <circle cx="80" cy="70" r="12" fill="#8a3b12"/>
+    <text x="80" y="140">Normal</text>
+    <circle cx="240" cy="70" r="48" fill="#f3e3d3" stroke="#8a3b12" stroke-width="2"/>
+    <circle cx="240" cy="70" r="13" fill="#8a3b12"/>
+    <text x="240" y="140">Adapted</text>
+    <circle cx="400" cy="70" r="52" fill="#fbf1e6" stroke="#8a3b12" stroke-width="2" stroke-dasharray="6 3"/>
+    <circle cx="400" cy="70" r="12" fill="#8a3b12"/>
+    <text x="400" y="140">Reversible injury</text>
+    <path d="M520 40 l20 -10 l25 15 l15 25 l-10 30 l-30 10 l-25 -15 z" fill="#fbf1e6" stroke="#a3271f" stroke-width="2"/>
+    <circle cx="545" cy="70" r="5" fill="#a3271f"/>
+    <circle cx="560" cy="62" r="3" fill="#a3271f"/>
+    <text x="560" y="140">Cell death</text>
+    <g stroke="#5f5a52" stroke-width="2" marker-end="url(#a)">
+      <line x1="128" y1="70" x2="182" y2="70"/>
+      <line x1="294" y1="70" x2="338" y2="70"/>
+      <line x1="458" y1="70" x2="508" y2="70"/>
+    </g>
+  </g>
+  <defs>
+    <marker id="a" viewBox="0 0 10 10" refX="9" refY="5" markerWidth="6" markerHeight="6" orient="auto">
+      <path d="M0 0 L10 5 L0 10 z" fill="#5f5a52"/>
+    </marker>
+  </defs>
+</svg>

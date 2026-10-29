@@ -32,6 +32,7 @@ docker compose up -d mysql
 pnpm install
 pnpm build                                   # builds the CLIs in packages/db
 pnpm --filter @pragya/db seed                # migrate + launch streams
+pnpm --filter @pragya/pack-builder run content import ../../content/sample-pathology --publish
 pnpm dev                                     # API on :4000, web on :3000
 ```
 
@@ -41,12 +42,14 @@ Sign up at http://localhost:3000/sign-up. In development, verification emails an
 pnpm --filter @pragya/db grant-role --email you@example.com --role superadmin
 ```
 
-Checks: `pnpm lint`, `pnpm typecheck`, `pnpm test` (the MySQL integration tests run when `DATABASE_URL` is set) and `pnpm build`.
+Checks: `pnpm lint`, `pnpm typecheck`, `pnpm test` (the MySQL integration tests run when `TEST_DATABASE_URL` is set; they use the separate `pragya_test` database) and `pnpm build`.
 
-| Path             | What                                                                                   |
-| ---------------- | -------------------------------------------------------------------------------------- |
-| `packages/authz` | Roles, scopes and the `can()` policy, with a role × action × tenant test matrix        |
-| `packages/db`    | Drizzle MySQL schema, migrations and tenant-scoped repositories                        |
-| `packages/auth`  | Better Auth setup: email + password, mobile OTP, optional Google; dev mail/SMS senders |
-| `apps/api`       | Fastify + tRPC API with health, CORS, helmet, rate limits and envelope errors          |
-| `apps/web`       | Next.js web app (landing page for now)                                                 |
+| Path                 | What                                                                                        |
+| -------------------- | ------------------------------------------------------------------------------------------- |
+| `packages/authz`     | Roles, scopes and the `can()` policy, with a role × action × tenant test matrix             |
+| `packages/db`        | Drizzle MySQL schema, migrations and tenant-scoped repositories                             |
+| `packages/auth`      | Better Auth setup: email + password, mobile OTP, optional Google; dev mail/SMS senders      |
+| `packages/content`   | Content-pack schemas (manifest, lesson blocks, questions) and the Markdown → blocks parser  |
+| `tools/pack-builder` | Validates, bundles and imports content packs ([authoring guide](docs/CONTENT_AUTHORING.md)) |
+| `apps/api`           | Fastify + tRPC API with health, CORS, helmet, rate limits and envelope errors               |
+| `apps/web`           | Next.js web app (landing page for now)                                                      |

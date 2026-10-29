@@ -1,5 +1,6 @@
 import { sql } from "drizzle-orm";
 import {
+  char,
   check,
   foreignKey,
   decimal,
@@ -53,6 +54,9 @@ export const courses = mysqlTable(
     pricePaise: int("price_paise", { unsigned: true }).notNull().default(0),
     language: varchar("language", { length: 10 }).notNull().default("en"),
     publishedAt: timestamp("published_at", { mode: "date", fsp: 3 }),
+    /** Version and SHA-256 of the content pack last imported into this course. */
+    contentVersion: varchar("content_version", { length: 20 }),
+    contentChecksum: char("content_checksum", { length: 64 }),
     ...timestamps,
   },
   (t) => [
@@ -96,12 +100,16 @@ export const modules = mysqlTable(
     courseId: id("course_id")
       .notNull()
       .references(() => courses.id, { onDelete: "cascade" }),
+    /** Stable id from the content pack; re-imports update rows in place by slug. */
+    slug: varchar("slug", { length: 80 }).notNull(),
     title: varchar("title", { length: 200 }).notNull(),
     position: smallint("position").notNull(),
     ...timestamps,
   },
   (t) => [
-    uniqueIndex("modules_course_position_uq").on(t.courseId, t.position),
+    uniqueIndex("modules_course_slug_uq").on(t.courseId, t.slug),
+    // Not unique, so a re-import can reorder modules row by row.
+    index("modules_course_position_idx").on(t.courseId, t.position),
     // Target of lessons' composite FK, which pins a lesson's course to its module's course.
     uniqueIndex("modules_id_course_uq").on(t.id, t.courseId),
   ],
@@ -114,6 +122,8 @@ export const lessons = mysqlTable(
     moduleId: id("module_id").notNull(),
     /** Denormalised so access checks need no join; the composite FK keeps it equal to the module's. */
     courseId: id("course_id").notNull(),
+    /** Stable id from the content pack; re-imports update rows in place by slug. */
+    slug: varchar("slug", { length: 80 }).notNull(),
     title: varchar("title", { length: 200 }).notNull(),
     position: smallint("position").notNull(),
     isPreview: boolean("is_preview").notNull().default(false),
@@ -122,7 +132,8 @@ export const lessons = mysqlTable(
     ...timestamps,
   },
   (t) => [
-    uniqueIndex("lessons_module_position_uq").on(t.moduleId, t.position),
+    uniqueIndex("lessons_course_slug_uq").on(t.courseId, t.slug),
+    index("lessons_module_position_idx").on(t.moduleId, t.position),
     index("lessons_course_idx").on(t.courseId),
     foreignKey({
       name: "lessons_module_fk",

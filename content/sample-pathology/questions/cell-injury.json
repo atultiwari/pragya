@@ -1,0 +1,103 @@
+[
+  {
+    "id": "ci-causes-commonest",
+    "lessonId": "cell-injury-overview",
+    "format": "mcq",
+    "stem": "Which is the most frequent cause of cell injury in clinical practice?",
+    "options": [
+      { "id": "a", "text": "Genetic defects" },
+      { "id": "b", "text": "Oxygen deprivation (hypoxia or ischaemia)" },
+      { "id": "c", "text": "Radiation" },
+      { "id": "d", "text": "Nutritional excess" }
+    ],
+    "answer": "b",
+    "explanation": "Hypoxia and ischaemia underlie infarcts and many other injuries, which makes them the commonest cause.",
+    "difficulty": "easy"
+  },
+  {
+    "id": "ci-irreversible-nucleus",
+    "lessonId": "cell-injury-overview",
+    "format": "mcq",
+    "stem": "Which finding indicates that a cell has passed the point of no return?",
+    "options": [
+      { "id": "a", "text": "Cytoplasmic vacuoles" },
+      { "id": "b", "text": "Plasma membrane blebs" },
+      { "id": "c", "text": "Karyolysis" },
+      { "id": "d", "text": "Mild chromatin clumping" }
+    ],
+    "answer": "c",
+    "explanation": "Dissolution of the nucleus is a sign of cell death; the other changes are compatible with recovery.",
+    "difficulty": "medium"
+  },
+  {
+    "id": "ri-swelling-mechanism",
+    "lessonId": "reversible-injury",
+    "format": "scenario_mcq",
+    "stem": "Renal tubular cells from a patient with brief hypotension are swollen and pale, with intact nuclei. The main mechanism of this change is:",
+    "options": [
+      { "id": "a", "text": "Failure of the ATP-dependent sodium pump" },
+      { "id": "b", "text": "Activation of caspases" },
+      { "id": "c", "text": "Lipid accumulation from increased fatty acid uptake" },
+      { "id": "d", "text": "Complement-mediated membrane attack" }
+    ],
+    "answer": "a",
+    "explanation": "Falling ATP slows the Na⁺/K⁺-ATPase; sodium and water enter the cell, causing hydropic swelling.",
+    "difficulty": "medium",
+    "tags": ["mechanisms"]
+  },
+  {
+    "id": "ri-fatty-change-organ",
+    "lessonId": "reversible-injury",
+    "format": "fib",
+    "stem": "Fatty change is seen most often in the ______.",
+    "answers": ["liver", "hepatocytes"],
+    "explanation": "Hepatocytes handle most of the body's fat metabolism."
+  },
+  {
+    "id": "na-pattern-tb",
+    "lessonId": "necrosis-and-apoptosis",
+    "format": "mcq",
+    "stem": "Caseous necrosis is characteristic of:",
+    "options": [
+      { "id": "a", "text": "Myocardial infarction" },
+      { "id": "b", "text": "Tuberculosis" },
+      { "id": "c", "text": "Acute pancreatitis" },
+      { "id": "d", "text": "Cerebral infarction" }
+    ],
+    "answer": "b",
+    "explanation": "The cheese-like centre of tuberculous granulomas gives caseous necrosis its name.",
+    "difficulty": "easy",
+    "tags": ["necrosis-patterns"]
+  },
+  {
+    "id": "na-pattern-brain",
+    "lessonId": "necrosis-and-apoptosis",
+    "format": "true_false",
+    "stem": "An infarct of the brain typically shows coagulative necrosis.",
+    "answer": false,
+    "explanation": "Brain infarcts liquefy (liquefactive necrosis); coagulative necrosis is typical of heart and kidney infarcts.",
+    "tags": ["necrosis-patterns"]
+  },
+  {
+    "id": "na-apoptosis-features",
+    "lessonId": "necrosis-and-apoptosis",
+    "format": "multi_select",
+    "stem": "Select the features of apoptosis.",
+    "options": [
+      { "id": "a", "text": "Cell shrinkage" },
+      { "id": "b", "text": "Marked inflammation" },
+      { "id": "c", "text": "Formation of apoptotic bodies" },
+      { "id": "d", "text": "Rupture of the plasma membrane" }
+    ],
+    "answers": ["a", "c"],
+    "explanation": "Apoptotic cells shrink and fragment into membrane-bound bodies that are removed without inflammation."
+  },
+  {
+    "id": "na-explain-liquefaction",
+    "lessonId": "necrosis-and-apoptosis",
+    "format": "why",
+    "stem": "Explain why a brain infarct undergoes liquefactive rather than coagulative necrosis.",
+    "modelAnswer": "Hydrolytic enzymes released from dying neurons and from neutrophils and microglia digest the tissue rapidly. Brain has little connective-tissue stroma to preserve its architecture (and a high lipid content), so the outline is lost and a fluid-filled cavity forms instead of a firm, preserved infarct.",
+    "marks": 3
+  }
+]
