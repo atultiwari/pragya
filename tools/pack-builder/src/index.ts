@@ -7,3 +7,4 @@ export {
 } from "./bundle.js";
 export { loadPack, type LoadResult } from "./load.js";
 export { toCourseImport } from "./to-import.js";
+export { copyFigures } from "./assets.js";

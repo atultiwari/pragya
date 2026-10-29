@@ -10,7 +10,9 @@ import Fastify, {
   type FastifyInstance,
 } from "fastify";
 import { registerAuthRoutes, type AuthHandler } from "./auth-route.js";
+import { registerContentRoutes } from "./content-route.js";
 import { guestResolver, toWebHeaders, type SubjectResolver } from "./context.js";
+import { NO_SERVICES, type Services } from "./services.js";
 import type { Env } from "./env.js";
 import { requestSerializer } from "./logging.js";
 import { appRouter, type AppRouter } from "./routers/index.js";
@@ -35,6 +37,10 @@ export interface ServerDeps {
   readonly resolveSubject?: SubjectResolver;
   /** Better Auth's handler; /api/auth/* is mounted only when provided. */
   readonly authHandler?: AuthHandler;
+  /** Repositories used by procedures; without them, data procedures fail with a 500. */
+  readonly services?: Services;
+  /** Folder of imported pack figures; /content/* is mounted only when provided. */
+  readonly contentAssetsDir?: string;
   /** Shared logger, so auth and the server log through one pino instance. */
   readonly logger?: FastifyBaseLogger;
 }
@@ -76,6 +82,13 @@ export async function buildServer(env: Env, deps: ServerDeps = {}): Promise<Fast
   app.get("/health", () => ok({ status: "ok" }));
 
   if (deps.authHandler) registerAuthRoutes(app, deps.authHandler, env.AUTH_RATE_LIMIT_PER_MINUTE);
+  if (deps.contentAssetsDir) {
+    await registerContentRoutes(app, {
+      assetsDir: deps.contentAssetsDir,
+      services: deps.services ?? NO_SERVICES,
+      resolveSubject,
+    });
+  }
 
   await app.register(fastifyTRPCPlugin, {
     prefix: "/trpc",
@@ -84,6 +97,7 @@ export async function buildServer(env: Env, deps: ServerDeps = {}): Promise<Fast
       maxBatchSize: MAX_TRPC_BATCH,
       createContext: async ({ req }) => ({
         subject: await resolveSubject(toWebHeaders(req.headers)),
+        services: deps.services ?? NO_SERVICES,
       }),
       onError: ({ error, path, req }) => {
         if (error.code === "INTERNAL_SERVER_ERROR")

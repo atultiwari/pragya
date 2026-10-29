@@ -1,8 +1,10 @@
 import { guest, user, type RoleAssignment, type Subject } from "@pragya/authz";
 import type { IncomingHttpHeaders } from "node:http";
+import type { Services } from "./services.js";
 
 export interface RequestContext {
   readonly subject: Subject;
+  readonly services: Services;
 }
 
 export type SubjectResolver = (headers: Headers) => Promise<Subject>;

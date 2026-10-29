@@ -2,6 +2,7 @@ import { ForbiddenError, guest } from "@pragya/authz";
 import { fetchRequestHandler } from "@trpc/server/adapters/fetch";
 import { describe, expect, it } from "vitest";
 import { z } from "zod";
+import { NO_SERVICES } from "./services.js";
 import { authorizedProcedure, publicProcedure, router } from "./trpc.js";
 
 const testRouter = router({
@@ -29,7 +30,7 @@ const call = async (path: string, input?: unknown): Promise<{ status: number; bo
     endpoint: "/trpc",
     req: new Request(`http://test/trpc/${path}${query}`),
     router: testRouter,
-    createContext: () => ({ subject: guest() }),
+    createContext: () => ({ subject: guest(), services: NO_SERVICES }),
   });
   return { status: res.status, body: (await res.json()) as TrpcBody };
 };

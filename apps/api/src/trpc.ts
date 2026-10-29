@@ -15,6 +15,9 @@ const t = initTRPC.context<RequestContext>().create({
 
 export const router = t.router;
 
+/** Calls procedures in-process (tests, server-side jobs) with a prepared context. */
+export const createCaller = t.createCallerFactory;
+
 /** Turns an authz denial anywhere in the chain into a 403 instead of a 500. */
 const mapForbidden = t.middleware(async ({ next }) => {
   const result = await next();

@@ -1,4 +1,5 @@
-import { readFile, realpath, stat } from "node:fs/promises";
+import { copyFile, mkdir, readFile, realpath, stat } from "node:fs/promises";
+import { dirname } from "node:path";
 import { join, sep } from "node:path";
 
 export type FileRead =
@@ -13,6 +14,8 @@ const isMissing = (error: unknown): boolean =>
 export interface PackFiles {
   read(relativePath: string): Promise<FileRead>;
   exists(relativePath: string): Promise<boolean>;
+  /** Copies a pack file to an absolute destination, byte for byte. */
+  copyTo(relativePath: string, destination: string): Promise<void>;
 }
 
 export async function openPackFiles(directory: string): Promise<PackFiles> {
@@ -43,6 +46,16 @@ export async function openPackFiles(directory: string): Promise<PackFiles> {
         }
         throw error;
       }
+    },
+    async copyTo(relativePath, destination) {
+      const resolved = await resolve(relativePath);
+      if (resolved === "missing" || resolved === "outside") {
+        throw new Error(
+          `${relativePath}: cannot copy (${resolved === "missing" ? "not found" : "outside the pack"})`,
+        );
+      }
+      await mkdir(dirname(destination), { recursive: true });
+      await copyFile(resolved, destination);
     },
     async exists(relativePath) {
       const resolved = await resolve(relativePath);

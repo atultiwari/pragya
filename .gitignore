@@ -33,3 +33,6 @@ apps/desktop/src-tauri/target/
 *.log
 npm-debug.log*
 .DS_Store
+
+# Pack figures copied by `pack-builder import`; served by the API with access checks
+var/

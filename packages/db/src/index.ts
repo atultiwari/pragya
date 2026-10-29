@@ -25,3 +25,20 @@ export {
   type LessonImport,
   type ModuleImport,
 } from "./repositories/course-import.js";
+export {
+  createCatalogueRepository,
+  type CatalogueRepository,
+  type CourseOutline,
+  type CoursePage,
+  type CourseSummary,
+  type FigureUse,
+  type LessonView,
+  type ListCoursesQuery,
+  type OutlineLesson,
+} from "./repositories/catalogue.js";
+export {
+  createEnrollmentRepository,
+  type EnrolInput,
+  type EnrolOutcome,
+  type EnrollmentRepository,
+} from "./repositories/enrollments.js";
