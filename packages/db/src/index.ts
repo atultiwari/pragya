@@ -1,4 +1,5 @@
 export { createDb, type Database, type DbHandle } from "./client.js";
+export { MIGRATIONS_FOLDER, runMigrations, withAdvisoryLock } from "./migrate.js";
 export * as schema from "./schema/index.js";
 export {
   createRoleAssignmentRepository,
@@ -14,3 +15,5 @@ export {
   type BatchRepository,
   type CreateBatchInput,
 } from "./repositories/batches.js";
+export { upsertStreams, type StreamSeed } from "./repositories/streams.js";
+export { findUserByEmail, type UserIdentity } from "./repositories/users.js";

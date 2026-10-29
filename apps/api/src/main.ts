@@ -1,12 +1,15 @@
+import { pino } from "pino";
+import { createApp } from "./app.js";
 import { parseEnv } from "./env.js";
-import { buildServer } from "./server.js";
+import { requestSerializer } from "./logging.js";
 
 const env = parseEnv(process.env);
-const app = await buildServer(env);
+const logger = pino({ level: env.LOG_LEVEL, serializers: { req: requestSerializer } });
 
 try {
-  await app.listen({ port: env.API_PORT, host: env.API_HOST });
+  const { server } = await createApp(env, process.env, logger);
+  await server.listen({ port: env.API_PORT, host: env.API_HOST });
 } catch (error: unknown) {
-  app.log.fatal({ err: error }, "API failed to start");
+  logger.fatal({ err: error }, "API failed to start");
   process.exit(1);
 }

@@ -17,7 +17,9 @@ export const users = mysqlTable(
     name: varchar("name", { length: 120 }).notNull(),
     email: varchar("email", { length: 254 }).notNull(),
     emailVerified: boolean("email_verified").notNull().default(false),
-    phone: varchar("phone", { length: 20 }),
+    /** E.164 number; set and verified by Better Auth's phone-number (OTP) plugin. */
+    phoneNumber: varchar("phone_number", { length: 20 }),
+    phoneNumberVerified: boolean("phone_number_verified").notNull().default(false),
     image: varchar("image", { length: 2048 }),
     /** Public leaderboard handle; real names are opt-in. */
     handle: varchar("handle", { length: 40 }),
@@ -25,7 +27,7 @@ export const users = mysqlTable(
   },
   (t) => [
     uniqueIndex("users_email_uq").on(t.email),
-    uniqueIndex("users_phone_uq").on(t.phone),
+    uniqueIndex("users_phone_uq").on(t.phoneNumber),
     uniqueIndex("users_handle_uq").on(t.handle),
   ],
 );

@@ -18,7 +18,9 @@
     "test": "vitest run",
     "test:coverage": "vitest run --coverage",
     "db:generate": "drizzle-kit generate",
-    "db:migrate": "drizzle-kit migrate"
+    "db:migrate": "drizzle-kit migrate",
+    "seed": "node --env-file-if-exists=../../.env dist/cli/seed.js",
+    "grant-role": "node --env-file-if-exists=../../.env dist/cli/grant-role.js"
   },
   "devDependencies": {
     "@types/node": "^26.6.6",

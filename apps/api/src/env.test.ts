@@ -9,6 +9,7 @@ describe("parseEnv", () => {
       WEB_ORIGIN: "http://localhost:3000",
       LOG_LEVEL: "info",
       RATE_LIMIT_PER_MINUTE: 120,
+      AUTH_RATE_LIMIT_PER_MINUTE: 20,
       TRUST_PROXY_HOPS: 0,
     });
   });

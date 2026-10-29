@@ -13,9 +13,11 @@
     "test:coverage": "vitest run --coverage"
   },
   "dependencies": {
+    "better-auth": "^1.7.14",
     "next": "^16.4.3",
     "react": "^19.3.1",
-    "react-dom": "^19.3.1"
+    "react-dom": "^19.3.1",
+    "zod": "^4.6.7"
   },
   "devDependencies": {
     "@types/node": "^26.6.6",
