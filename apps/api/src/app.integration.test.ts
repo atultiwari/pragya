@@ -27,7 +27,7 @@ describe.skipIf(!DATABASE_URL)("API with Better Auth and MySQL", () => {
 
   beforeAll(async () => {
     const migrator = createDb(DATABASE_URL ?? "");
-    await runMigrations(migrator.db);
+    await runMigrations(migrator);
     await migrator.close();
     ({ server } = await createApp(parseEnv(source), source, pino({ level: "silent" })));
   });

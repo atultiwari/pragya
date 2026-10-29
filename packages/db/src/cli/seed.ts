@@ -12,7 +12,7 @@ if (!databaseUrl) {
 
 const handle = createDb(databaseUrl);
 try {
-  await runMigrations(handle.db);
+  await runMigrations(handle);
   await upsertStreams(handle.db, LAUNCH_STREAMS);
   console.warn(`Seeded ${LAUNCH_STREAMS.length} streams`);
 } catch (error: unknown) {

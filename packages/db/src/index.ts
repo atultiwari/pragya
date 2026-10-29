@@ -1,5 +1,5 @@
 export { createDb, type Database, type DbHandle } from "./client.js";
-export { MIGRATIONS_FOLDER, runMigrations } from "./migrate.js";
+export { MIGRATIONS_FOLDER, runMigrations, withAdvisoryLock } from "./migrate.js";
 export * as schema from "./schema/index.js";
 export {
   createRoleAssignmentRepository,

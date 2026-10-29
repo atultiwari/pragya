@@ -19,7 +19,7 @@ describe.skipIf(!DATABASE_URL)("repositories against MySQL", () => {
 
   beforeAll(async () => {
     handle = createDb(DATABASE_URL ?? "");
-    await runMigrations(handle.db);
+    await runMigrations(handle);
     await handle.db.insert(institutes).values([
       { id: instituteA, name: "Institute A", slug: `a-${instituteA}` },
       { id: instituteB, name: "Institute B", slug: `b-${instituteB}` },

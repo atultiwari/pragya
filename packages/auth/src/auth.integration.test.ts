@@ -30,7 +30,7 @@ describe.skipIf(!DATABASE_URL)("Better Auth against MySQL", () => {
 
   beforeAll(async () => {
     handle = createDb(DATABASE_URL ?? "");
-    await runMigrations(handle.db);
+    await runMigrations(handle);
     auth = createAuth({ db: handle.db, env, mailer, sms });
   });
 
