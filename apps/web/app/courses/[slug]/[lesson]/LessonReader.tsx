@@ -5,6 +5,7 @@ import Link from "next/link";
 import { useEffect, useState } from "react";
 import { BlockView } from "@/components/content/BlockView";
 import { browserApi, contentAssetBase, errorCode } from "@/lib/trpc";
+import { MarkComplete } from "./MarkComplete";
 
 type Lesson = Awaited<ReturnType<typeof browserApi.catalogue.lesson.query>>;
 type State =
@@ -88,6 +89,7 @@ export function LessonReader({ courseSlug, lessonSlug }: LessonReaderProps) {
               />
             ))}
           </article>
+          <MarkComplete key={lessonSlug} courseSlug={courseSlug} lessonSlug={lessonSlug} />
           <nav className="lesson-nav" aria-label="Lesson navigation">
             {lesson.previous ? (
               <Link href={`/courses/${courseSlug}/${lesson.previous.slug}`}>

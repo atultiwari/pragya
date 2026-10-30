@@ -56,3 +56,11 @@ export const platformProcedure = (action: Action) =>
     assertCan(ctx.subject, action, {});
     return next();
   });
+
+/** Requires a signed-in caller and exposes their user id; guests get UNAUTHORIZED. */
+export const signedInProcedure = publicProcedure.use(({ ctx, next }) => {
+  if (ctx.subject.kind !== "user") {
+    throw new TRPCError({ code: "UNAUTHORIZED", message: "Sign in to continue" });
+  }
+  return next({ ctx: { ...ctx, userId: ctx.subject.userId } });
+});

@@ -2,6 +2,7 @@ import type { Metadata } from "next";
 import Link from "next/link";
 import type { ReactNode } from "react";
 import "./globals.css";
+import { NavLinks } from "./NavLinks";
 
 export const metadata: Metadata = {
   title: "Pragya — AI-powered learning",
@@ -17,13 +18,7 @@ export default function RootLayout({ children }: { readonly children: ReactNode 
           <Link href="/" className="brand">
             Pragya
           </Link>
-          <span className="topnav-links">
-            <Link href="/courses">Courses</Link>
-            <Link href="/sign-in">Sign in</Link>
-            <Link href="/sign-up" className="button-link">
-              Create account
-            </Link>
-          </span>
+          <NavLinks />
         </nav>
         {children}
       </body>

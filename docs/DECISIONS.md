@@ -166,6 +166,22 @@ Free and promotional videos use YouTube embeds. Paid lectures use Bunny Stream (
 - **No draft-lesson risk:** publishing is per course, and course visibility is already checked, so draft lessons can't leak through pools.
 - **Not yet built:** spaced repetition, mock exams from blueprints and mastery scores. Attempts are already stored in the shape they will need.
 
+### D-026 · 30 Oct 2026 · Lesson progress and the student dashboard
+
+- **Completion is explicit:** a learner marks a lesson complete with a button at the end of the reader; nothing is inferred from scrolling or time on page. It can be undone. Marking again keeps the first completion time.
+- **One access path:** `progress.markComplete` and `progress.lesson` go through `loadReadableLesson`, like lesson bodies and quizzes (D-025). The course is taken from the lesson row, never from input. Both need a signed-in learner (`signedInProcedure`).
+- **Preview lessons:** a signed-in learner may mark a free preview lesson before enrolling. It is stored, and counts once they enrol.
+- **Which courses:** `dashboard.overview` lists active, unexpired enrolments (at most 50, newest first), and re-checks each course with `can(course.read)`. An archived or no-longer-visible course drops off the dashboard, and so does its practice. Responses carry slugs and titles, never internal ids.
+- **"Continue where you left off":** the most recently active course that still has an unfinished lesson; it points to that course's first unfinished lesson in outline order. Activity is the latest of enrolment, lesson completion and practice attempt.
+- **Practice accuracy:** correct ÷ graded over every recorded attempt (repeat answers count), per course and per lesson. Descriptive answers (`is_correct = null`) count as answered, not graded. Accuracy shows "—" until something is graded. Mastery and latest-attempt scoring come with spaced repetition.
+- **Rendering:** the dashboard and the completion control load in the browser, because the API's session cookie never reaches the web server (D-011, D-022). The nav switches to Dashboard / Account links once the browser knows the session.
+- **Review fixes:**
+  - **Fixed query fan-out:** the overview first made two lookups per course (about 100 queries for 50 courses). Now the enrolled-courses query skips unpublished courses before the cap and returns institute membership through an `EXISTS` subquery. The router builds each course's authz facts from that row, so one load is 4 queries.
+  - **Course kept consistent with its lesson:** `lesson_progress.course_id` is pinned to its lesson's course by a composite FK to `lessons(id, course_id)`, mirroring `lessons → modules`.
+- **Accepted for now:**
+  - `markComplete` loads the lesson's blocks through `loadReadableLesson`, like every in-lesson call. Only the global rate limit covers it.
+  - Progress rows cascade when a re-import drops a lesson. Imports update lessons in place by slug, so only lessons removed from a pack lose progress.
+
 ## Open questions
 
 1. Platform commission %, and whether it differs for institute-sourced vs marketplace sales.

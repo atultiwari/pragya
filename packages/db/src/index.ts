@@ -50,3 +50,13 @@ export {
   type QuestionRepositoryOptions,
   type StoredQuestion,
 } from "./repositories/questions.js";
+export {
+  createProgressRepository,
+  MAX_DASHBOARD_COURSES,
+  type CourseAccuracy,
+  type EnrolledCourseProgress,
+  type LessonAccuracy,
+  type LessonRef,
+  type PracticeTally,
+  type ProgressRepository,
+} from "./repositories/progress.js";

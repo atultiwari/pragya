@@ -155,4 +155,41 @@ describe.skipIf(!DATABASE_URL)("API with Better Auth and MySQL", () => {
     expect(JSON.stringify(res.json())).toContain("Paid body");
     expect((await lesson()).statusCode).toBe(403);
   });
+  it("tracks lesson completion and shows it on the learner's dashboard", async () => {
+    const { cookie } = await signUp();
+    const post = (path: string, payload: unknown) =>
+      server.inject({
+        method: "POST",
+        url: `/trpc/${path}`,
+        headers: { cookie, "content-type": "application/json" },
+        payload: payload as object,
+      });
+
+    expect((await trpc("dashboard.overview")).statusCode).toBe(401);
+    expect(
+      (await post("progress.markComplete", { courseSlug, lessonSlug: "deep" })).statusCode,
+    ).toBe(403);
+    await post("enrollment.enrolFree", { courseSlug });
+    const marked = await post("progress.markComplete", { courseSlug, lessonSlug: "intro" });
+    expect(marked.json()).toEqual({ result: { data: { completed: true } } });
+
+    const overview = (await trpc("dashboard.overview", cookie)).json() as {
+      result: { data: { courses: unknown[]; resume: unknown } };
+    };
+    expect(overview.result.data.courses).toEqual([
+      expect.objectContaining({
+        slug: courseSlug,
+        lessonsTotal: 2,
+        lessonsCompleted: 1,
+        nextLesson: { slug: "deep", title: "Deep" },
+        practice: null,
+      }),
+    ]);
+    expect(overview.result.data.resume).toEqual({
+      courseSlug,
+      courseTitle: "API course",
+      lessonSlug: "deep",
+      lessonTitle: "Deep",
+    });
+  });
 });

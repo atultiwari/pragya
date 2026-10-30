@@ -135,6 +135,8 @@ export const lessons = mysqlTable(
     uniqueIndex("lessons_course_slug_uq").on(t.courseId, t.slug),
     index("lessons_module_position_idx").on(t.moduleId, t.position),
     index("lessons_course_idx").on(t.courseId),
+    // Target of lesson_progress's composite FK, which pins a progress row's course to its lesson's.
+    uniqueIndex("lessons_id_course_uq").on(t.id, t.courseId),
     foreignKey({
       name: "lessons_module_fk",
       columns: [t.moduleId, t.courseId],
