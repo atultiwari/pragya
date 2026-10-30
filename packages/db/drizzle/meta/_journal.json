@@ -36,6 +36,13 @@
       "when": 1793297475064,
       "tag": "0004_question_bank",
       "breakpoints": true
+    },
+    {
+      "idx": 5,
+      "version": "5",
+      "when": 1793326116420,
+      "tag": "0005_lesson_progress",
+      "breakpoints": true
     }
   ]
 }

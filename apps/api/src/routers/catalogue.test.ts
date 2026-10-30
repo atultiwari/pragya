@@ -82,6 +82,7 @@ function fakeServices({
       isInstituteMember: async () => member,
     },
     questions: NO_SERVICES.questions,
+    progress: NO_SERVICES.progress,
   };
   return { services, enrolments, bodyReads };
 }

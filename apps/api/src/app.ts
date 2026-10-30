@@ -3,6 +3,7 @@ import {
   createCatalogueRepository,
   createDb,
   createEnrollmentRepository,
+  createProgressRepository,
   createQuestionRepository,
   createRoleAssignmentRepository,
   type DbHandle,
@@ -40,6 +41,7 @@ export async function createApp(
       catalogue: createCatalogueRepository(db.db),
       enrollments: createEnrollmentRepository(db.db),
       questions: createQuestionRepository(db.db),
+      progress: createProgressRepository(db.db),
     },
     resolveSubject: createSubjectResolver({
       getUserId: (headers) => getSessionUserId(auth, headers),

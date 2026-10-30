@@ -453,3 +453,71 @@ button:disabled {
 .debatable {
   color: var(--warn);
 }
+
+.resume {
+  background: var(--surface);
+  border: 1px solid var(--border);
+  border-left: 4px solid var(--accent);
+  border-radius: 12px;
+  padding: 24px;
+  margin-bottom: 8px;
+}
+.resume-title {
+  font-size: clamp(1.4rem, 3vw, 1.8rem);
+  margin: 0 0 4px;
+}
+.resume .muted {
+  margin: 0 0 16px;
+}
+.progress-cards {
+  grid-template-columns: repeat(auto-fit, minmax(280px, 1fr));
+}
+.progress-card {
+  display: grid;
+  gap: 10px;
+  align-content: start;
+}
+.progress-card p {
+  margin: 0;
+}
+.meter {
+  height: 8px;
+  border-radius: 999px;
+  background: var(--border);
+  overflow: hidden;
+}
+.meter span {
+  display: block;
+  height: 100%;
+  background: var(--ok);
+  border-radius: inherit;
+}
+.practice-detail summary {
+  cursor: pointer;
+}
+.practice-detail table {
+  width: 100%;
+  border-collapse: collapse;
+  margin-top: 8px;
+  font-size: 0.9rem;
+}
+.practice-detail th,
+.practice-detail td {
+  text-align: left;
+  padding: 6px 4px;
+  border-bottom: 1px solid var(--border);
+}
+.practice-detail th[scope="row"] {
+  font-weight: 400;
+}
+.completion {
+  display: flex;
+  flex-wrap: wrap;
+  align-items: center;
+  gap: 12px;
+  margin-top: 32px;
+}
+.completion .form-error {
+  flex-basis: 100%;
+  margin: 0;
+}
